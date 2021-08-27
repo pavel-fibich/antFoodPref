@@ -25,7 +25,14 @@ rm(list=ls())
 # Tools - Version control (choose inicialize to git)
 # (terminal) git remote add origin https://github.com/pavel-fibich/antFoodPref.git
 # (terminal) git branch -M main
+# (terminal) git push -u origin main
 # choose file to commit in github
+# token auth
+# install.packages("gitcreds")
+library(gitcreds)
+system("cat ~/.Renviron")
+gitcreds_set() # paste token
+
 
 
 afp<-read.csv("Picea-DATA.csv")
