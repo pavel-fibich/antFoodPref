@@ -10,6 +10,7 @@ rm(list=ls())
 # Visited_picea: 0,1 (possibly aggregate by in to proportion by factors)
 # temperature can be used instead of year and season!
 
+# research around
 # na pocty glm s poisson distribuci 
 # 3way https://www.datanovia.com/en/lessons/anova-in-r/
 # 1way anova https://statsandr.com/blog/anova-in-r/
@@ -29,12 +30,14 @@ rm(list=ls())
 # choose file to commit in github
 # token auth
 # install.packages("gitcreds")
-library(gitcreds)
-system("cat ~/.Renviron")
-gitcreds_set() # paste token
+if (FALSE) { #just for git commits/pulls
+  library(gitcreds)
+  system("cat ~/.Renviron")
+  gitcreds_set() # paste token
+}
 
-
-
+#################
+# read data set factors
 afp<-read.csv("Picea-DATA.csv")
 names(afp)
 afp$piceal<-log(1+afp$picea)
@@ -57,6 +60,7 @@ source("summarySE.R")
 
 trcol<-c("blue","red","green","violet")
 
+################# vizualisation
 afpse<-summarySE(afp, measurevar="picea", groupvars=c("Treatment","Season","Site","Year"))
 ggplot(afpse, aes(Season, picea)) + 
   geom_errorbar(aes(ymin=picea-ci,ymax=picea+ci,colour=Treatment ), position=position_dodge(0.5)) +
@@ -92,7 +96,6 @@ ggplot(afpse, aes(factor(Season), piceal))+
   scale_color_manual(values = trcol)+theme_light()
 ggsave(paste0("data_se_log.pdf"), width = 6, height = 9)
 
-
 afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Season","Site","Year"))
 ggplot(afpse, aes(Season, Visited_picea)) + 
   geom_errorbar(aes(ymin=Visited_picea-ci,ymax=Visited_picea+ci,colour=Treatment ), position=position_dodge(0.5)) +
@@ -107,7 +110,6 @@ ggplot(afpse, aes(Season, Visited_picea)) +
   ggtitle(paste("")) + facet_grid(Year ~ Site)+
   scale_color_manual(values = trcol)+theme_light()
 ggsave(paste0("visdata_se.pdf"), width = 6, height = 9)
-
 
 ggplot(afp, aes(factor(Season), picea))+
   geom_boxplot(aes(colour=Treatment), position=position_dodge(0.5)) +
@@ -126,19 +128,9 @@ ggplot(afp, aes(factor(Season), piceal))+
 ggsave(paste0("data_box_log.pdf"), width = 6, height = 9)
 
 
-# ony<-2017
-# for (ony in 2017:2019){
-#   p <- ggplot(afp[afp$Year == ony,], aes(factor(Season), picea)) + geom_boxplot(aes(colour=factor(Treatment)))
-#   p  + ggtitle(paste(ony)) + facet_grid(. ~ Site) + stat_summary(fun=mean, aes(group=Treatment),geom="point", shape=20, size=2,position=position_dodge(.9))
-#   ggsave(paste0("data",ony,".pdf"), width = 6, height = 6)
-#   p <- ggplot(afp[afp$Year == ony,], aes(factor(Season), picea)) + geom_boxplot(aes(colour=factor(Treatment)))
-#   p  + ggtitle(paste(ony,"log")) +scale_y_log10() + ylab("log10 picea") + facet_grid(. ~ Site) + stat_summary(fun=mean, aes(group=Treatment),geom="point", shape=20, size=2,position=position_dodge(.9))
-#   ggsave(paste0("data",ony,"_log.pdf"), width = 6, height = 6)
-# }
-
-
 library(MASS)
 library(multcomp)
+#################
 ###################### no site and year
 
 ang<-glm.nb( picea~Treatment, data=afp)
@@ -162,6 +154,7 @@ summary(glht(ang,mcp(Year="Tukey")),test = adjusted("holm"))
 
 
 library(interactions)
+#################
 # all factors additive
 ang<-glm.nb( picea~Treatment+Season+Site+Year, data=afp)
 anova(ang,test="Chisq")
@@ -178,20 +171,10 @@ ang<-glm.nb( picea~Treatment+Season+Site, data=afp)
 mydf <- ggpredict(ang, terms = c("Season","Treatment","Site"))
 ggplot(mydf)
 
-# ony=2017
-# for( ony in c(2017:2019)){
-#   ang<-glm.nb( picea~Treatment+Season+Site, data=afp[ afp$Year ==ony,])
-#   mydf <- ggpredict(ang, terms = c("Season","Treatment","Site"))
-#   plot(mydf) + ggtitle(ony) + 
-#     scale_color_manual(values = trcol)+theme_light()#+ scale_y_log10() + ylab("log10 picea")
-#   ggsave(paste0("ifacs2_",ony,".pdf"), width = 4, height = 4)
-#   plot(mydf) + scale_color_manual(values = trcol) + theme_light()+ggtitle(ony) + scale_y_log10() + ylab("log10 picea")
-#   ggsave(paste0("ifacs2_log_",ony,".pdf"), width = 4, height = 4)
-# }
 
 ony=2017
 mydf<-NULL
-for( ony in c(2017:2019)){
+for( ony in c(2017:2019)){ # fitting year separately but making one data.frame from the resutls
   ang<-glm.nb( picea~Treatment+Site+Season, data=afp[ afp$Year ==ony,])
   if (is.null(mydf)){
     mydf <- ggpredict(ang, terms = c("Season","Treatment","Site"))
@@ -209,17 +192,7 @@ plot(mydf) +facet_grid(Year~facet) +scale_color_manual(values = trcol) + theme_l
 ggsave(paste0("ifacs2years_log.pdf"), width = 6, height = 9)
 
 
-#pdf("ifacs2017.pdf")
-#cat_plot(ang,pred=Site,modx=Treatment,mod2=Season, data=afp[ afp$Year =="2017",])#,int.type="prediction" )
-#dev.off()
-#pdf("ifacs2018.pdf")
-#cat_plot(ang,pred=Site,modx=Treatment,mod2=Season, data=afp[ afp$Year =="2018",] )
-#dev.off()
-#pdf("ifacs2019.pdf")
-#cat_plot(ang,pred=Site,modx=Treatment,mod2=Season, data=afp[ afp$Year =="2019",] )
-#dev.off()
-
-
+#################
 # focal treatment and season
 ang<-glm.nb( picea~Treatment*Season, data=afp)
 anova(ang,test="Chisq")
@@ -275,18 +248,7 @@ plot(mydf) + scale_color_manual(values = trcol) + theme_light()+ ggtitle("Jan") 
 ggsave("trseJan2_log.pdf", width = 4, height = 4)
 
 
-
-# library(dae)
-# interaction.ABC.plot(picea,Season,Treatment,Site,data=afp) 
-# ang<-glm.nb( picea~Treatment+Season, data=afp[afp$Site=="Jan",])
-# cat_plot(ang,pred=Season,modx=Treatment,data=afp[afp$Site=="Jan",])
-
-# library(ggeffects)
-# ggpredict(ang)
-# afp[(afp$Site=="Jan") & (afp$Season == "1") & (afp$Treatment == "Control"),]$picea
-# ggpredict(ang, terms="Treatment")
-#ggplot(mydf, aes(x, predicted, colour = group)) + geom_errorbar()
-          
+#################
 # visited
 avp<-glm( Visited_picea~Treatment,data=afp, family="binomial")
 anova(avp,test="Chisq")
@@ -305,6 +267,7 @@ anova(avp,test="Chisq")
 summary(glht(avp,mcp(Site="Tukey")),test = adjusted("holm"))
 
 
+#################
 # bigger model
 an0<-glm.nb( picea~ Treatment+Season+Site+Year+
              Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
@@ -465,6 +428,7 @@ plot(mydf) + ggtitle(onsite) + scale_y_log10() + ylab("log10 picea")+scale_color
 ggsave(paste0(onsite,"_log.pdf"), width = 4, height = 4)
 
 
+#################
 ######################### visited
 ############ visited_picea
 avp<-glm( Visited_picea~Treatment+Season+Site+Year,data=afp, family="binomial")
@@ -509,7 +473,6 @@ avp<-glm( Visited_picea~Season+Treatment#+Year#+
 anova(avp,test="Chisq")
 summary(glht(avp,mcp(Treatment="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
 summary(glht(avp,mcp(Season="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
-
 
 #pdf("BK_vis.pdf")
 #cat_plot(avp,pred=Season,modx=Treatment,mod2=Year)
@@ -575,6 +538,9 @@ ggsave(paste0(onsite,"_vis.pdf"), width = 4, height = 4)
 
 ##################################
 # temperature
+
+
+# picea
 ants<-glm.nb( picea~ Treatment*Site.Temperature,data=afp)
 antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
 anova(ants);
@@ -590,14 +556,14 @@ mydf <- ggpredict(antm, terms = c("Mean.Temperature"))
 plot(mydf) + ggtitle("Mean.Temperature") + scale_color_manual(values = trcol) + theme_light()
 ggsave(paste0("temp_allt.pdf"), width = 4, height = 4)
 
-antmo<-glm.nb( picea~ Mean.Temperature,data=afp[afp$Treatment =="Control",])
+antmo<-glm.nb( picea~ Mean.Temperature+Treatment+Season,data=afp[afp$Site =="Rad",])
 anova(antmo)
-mydf <- ggpredict(antmo, terms = c("Mean.Temperature"))
-plot(mydf) + ggtitle("Mean.Temperature")#+ scale_y_log10() + ylab("log10 picea")
+mydf <- ggpredict(antmo, terms = c("Mean.Temperature","Treatment","Season"))
+plot(mydf) + ggtitle("Rad")+ scale_color_manual(values = trcol) + theme_light()#+ scale_y_log10() + ylab("log10 picea")
+ggsave(paste0("temp_Rad.pdf"), width = 4, height = 4)
 
 
-
-
+# Visited_picea
 ants<-glm( Visited_picea~ Treatment*Site.Temperature,data=afp,family="binomial")
 anova(ants,test="Chisq")
 antm<-glm( Visited_picea~ Treatment*Mean.Temperature,data=afp,family="binomial")
