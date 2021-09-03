@@ -60,7 +60,9 @@ source("summarySE.R")
 
 trcol<-c("blue","red","green","violet")
 
+########
 ################# vizualisation
+########
 afpse<-summarySE(afp, measurevar="picea", groupvars=c("Treatment","Season","Site","Year"))
 ggplot(afpse, aes(Season, picea)) + 
   geom_errorbar(aes(ymin=picea-ci,ymax=picea+ci,colour=Treatment ), position=position_dodge(0.5)) +
@@ -130,6 +132,7 @@ ggsave(paste0("data_box_log.pdf"), width = 6, height = 9)
 
 library(MASS)
 library(multcomp)
+
 #################
 ###################### no site and year
 
@@ -152,10 +155,9 @@ summary(glht(ang,mcp(Year="Tukey")),test = adjusted("holm"))
 
 
 
-
 library(interactions)
 #################
-# all factors additive
+######### all factors additive
 ang<-glm.nb( picea~Treatment+Season+Site+Year, data=afp)
 anova(ang,test="Chisq")
 #confint(glht(ang,mcp(Treatment="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
@@ -249,7 +251,7 @@ ggsave("trseJan2_log.pdf", width = 4, height = 4)
 
 
 #################
-# visited
+# visited (binary)
 avp<-glm( Visited_picea~Treatment,data=afp, family="binomial")
 anova(avp,test="Chisq")
 summary(glht(avp,mcp(Treatment="Tukey")),test = adjusted("holm"))
@@ -275,13 +277,26 @@ an0<-glm.nb( picea~ Treatment+Season+Site+Year+
             ,data=afp)
 anova(an0,test="Chisq")
 
+
+# mixed model with Visited_Myrmica
+library(lme4)
 anm<-glmer.nb( picea~ Treatment+Site+Season#+Year
              +Treatment:Site + Treatment:Season + Treatment:Year #+ Site:Year
              +Site:Season + Site:Year + Season:Year + (1|Visited_Myrmica) 
              #+Treatment:Site:Season + Treatment:Season:Year + Treatment:Site:Year
              #+Season:Year+Site:Season
              ,data=afp)
+library(car)
 Anova(anm)
+
+# mixed model with Temperature
+
+anm0<-glm.nb( picea~ Treatment*Season,data=afp)
+anm<-glmer.nb( picea~ Treatment*Season +(1|Site.Temperature),data=afp)
+Anova(anm)
+anm<-glmer.nb( picea~ Treatment*Season +(1|Mean.Temperature),data=afp)
+Anova(anm)
+
 ant<-glm.nb( picea~ Treatment+Site+Season+Year+Site.Temperature
              +Treatment:Site + Treatment:Season + Treatment:Year #+ Site:Year
              +Site:Season + Site:Year + Season:Year 
@@ -542,8 +557,8 @@ ggsave(paste0(onsite,"_vis.pdf"), width = 4, height = 4)
 
 # picea
 ants<-glm.nb( picea~ Treatment*Site.Temperature,data=afp)
+anova(ants)
 antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
-anova(ants);
 anova(antm)
 
 mydf <- ggpredict(antm, terms = c("Mean.Temperature","Treatment"))
@@ -574,6 +589,24 @@ plot(mydf) + ggtitle("Site.Temperature") + scale_color_manual(values = trcol) + 
 ggsave(paste0("sitetemp.pdf"), width = 4, height = 4)
 plot(mydf) + ggtitle("Site.Temperature") + scale_y_log10() + ylab("log10 picea") +scale_color_manual(values = trcol) + theme_light()
 ggsave(paste0("site_log.pdf"), width = 4, height = 4)
+
+antst<-glm( Visited_picea~ Site.Temperature,data=afp[afp$Treatment == "Control",],family="binomial")
+anova(antst,test="Chisq")
+antst<-glm( Visited_picea~ Site.Temperature,data=afp[afp$Treatment == "Protein",],family="binomial")
+anova(antst,test="Chisq")
+antst<-glm( Visited_picea~ Site.Temperature,data=afp[afp$Treatment == "Carbohydrate",],family="binomial")
+anova(antst,test="Chisq")
+
+antst<-glm( Visited_picea~ Site.Temperature,data=afp[afp$Treatment != "Control",],family="binomial")
+anova(antst,test="Chisq")
+
+afp$Control<-ifelse(afp$Treatment == "Control",TRUE,FALSE)
+ants<-glm( Visited_picea~ Control*Site.Temperature,data=afp,family="binomial")
+anova(ants,test="Chisq")
+
+ants<-glmer( Visited_picea~ Site.Temperature+(1|Control),data=afp,family="binomial")
+Anova(ants)
+
 
 mydf <- ggpredict(ants, terms = c("Site.Temperature"))
 plot(mydf) + ggtitle("Site.Temperature") + scale_color_manual(values = trcol) + theme_light()#+ scale_y_log10() + ylab("log10 picea")
