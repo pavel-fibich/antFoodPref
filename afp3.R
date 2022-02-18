@@ -45,7 +45,6 @@ b<-ggplot(afpse2, aes(factor(Season), Visited_picea))+
   labs(x="Season",y=text_visited)+
   scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
 
-
 ggarrange(a, b, 
           labels = c("A", "B"),
           ncol = 2, nrow = 1)
@@ -59,3 +58,53 @@ ggplot(afpse, aes(factor(Season), piceal))+
   facet_grid(Site ~ Year)+labs(x="Season",y=text_piceal)+
   scale_color_manual(values = trcol)+theme_light()
 ggsave(paste0("Fig2_data_se.pdf"), width = 6, height = 9)
+
+#Fig5
+library(MASS)
+library(ggeffects)
+antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
+mydf <- ggpredict(antm, terms = c("Mean.Temperature","Treatment"))
+a<-plot(mydf) + scale_y_log10() + xlab("Mean temperature")+ylab(text_piceal) +scale_color_manual(values = trcol) + theme_light()+theme(legend.position = c(0.2, 0.65))+ggtitle("")
+
+ants<-glm.nb( picea~ Treatment*Site.Temperature,data=afp)
+mydf <- ggpredict(ants, terms = c("Site.Temperature","Treatment"))
+b<-plot(mydf) + scale_y_log10() + xlab("Site temperature")+ylab(text_piceal) +scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "none")+ggtitle("")
+
+ggarrange(a, b, 
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+ggsave(paste0("Fig5_temp.pdf"), width = 8, height = 5)
+
+
+#FigS1
+afpse<-summarySE(afp, measurevar="piceal", groupvars=c("Treatment"))
+a<-ggplot(afpse, aes(factor(Treatment), piceal))+
+  geom_errorbar(aes(ymin=piceal-se,ymax=piceal+se,colour=Treatment), position=position_dodge(0.5)) +
+  geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
+  labs(x="Treatment",y=text_piceal)+
+  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
+afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment"))
+b<-ggplot(afpse, aes(factor(Treatment), Visited_picea))+
+  geom_errorbar(aes(ymin=Visited_picea-se,ymax=Visited_picea+se,colour=Treatment), position=position_dodge(0.5)) +
+  geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
+  labs(x="Treatment",y=text_visited)+
+  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
+ggarrange(a, b, 
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+ggsave(paste0("FigS1_data_se.pdf"), width = 8, height = 5)
+
+#FigS2 - jeste neni hotove
+afpse<-summarySE(afp, measurevar="piceal", groupvars=c("Treatment","Season"))
+a<-ggplot(afpse, aes(factor(Season), piceal))+
+  geom_errorbar(aes(ymin=piceal-se,ymax=piceal+se,colour=Treatment), position=position_dodge(0.5)) +
+  geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
+  labs(x="Season",y=text_piceal)+
+  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = c(0.2, 0.4))
+
+afpse2<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Season"))
+b<-ggplot(afpse2, aes(factor(Season), Visited_picea))+
+  geom_errorbar(aes(ymin=Visited_picea-se,ymax=Visited_picea+se,colour=Treatment), position=position_dodge(0.5)) +
+  geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
+  labs(x="Season",y=text_visited)+
+  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
