@@ -40,6 +40,89 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
   return(datac)
 }
 
+summarySEnon <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+  library(plyr)
+  
+  # New version of length which can handle NA's: if na.rm==T, don't count them
+  length2 <- function (x, na.rm=FALSE) {
+    if (na.rm) sum(!is.na(x))
+    else       length(x)
+  }
+  
+  # This does the summary. For each group's data frame, return a vector with
+  # N, mean, and sd
+  datac <- ddply(data, groupvars, .drop=.drop,
+                 .fun = function(xx, col) {
+                   c(N    = length2(xx[[col]], na.rm=na.rm),
+                     mean = mean   (xx[[col]], na.rm=na.rm),
+                     sd   = sd     (xx[[col]], na.rm=na.rm)
+                   )
+                 },
+                 measurevar
+  )
+  
+  # Rename the "mean" column    
+  datac <- rename(datac, c("mean" = measurevar))
+  
+  datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+  
+  # Confidence interval multiplier for standard error
+  # Calculate t-statistic for confidence interval: 
+  # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+  #ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+  #datac$ci <- datac$se * ciMult
+  # function to obtain the mean
+  #https://tonyladson.wordpress.com/2016/02/05/confidence-interval-for-the-mean-of-non-normal-data/
+  library(boot)
+  Bmean <- function(data, i) {
+    d <- data[i] # allows boot to select sample
+    return(mean(d))
+  }
+  results <- boot(data=data$picea, statistic=Bmean, R=10000)
+  bres<-boot.ci(results, type=c("basic"))
+  #datac$ciL<-bres$bca[,4]
+  #datac$ciU<-bres$bca[,5]
+  datac$ciL<-bres$basic[,4]
+  datac$ciU<-bres$basic[,5]
+  
+  return(datac)
+}
+
+summarySEmed <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                         conf.interval=.95, .drop=TRUE) {
+  library(plyr)
+  
+  # New version of length which can handle NA's: if na.rm==T, don't count them
+  length2 <- function (x, na.rm=FALSE) {
+    if (na.rm) sum(!is.na(x))
+    else       length(x)
+  }
+  
+  # This does the summary. For each group's data frame, return a vector with
+  # N, mean, and sd
+  datac <- ddply(data, groupvars, .drop=.drop,
+                 .fun = function(xx, col) {
+                   c(N    = length2(xx[[col]], na.rm=na.rm),
+                     mean = median   (xx[[col]], na.rm=na.rm),
+                     sd   = sd     (xx[[col]], na.rm=na.rm),
+                     ciL = (wilcox.test(xx[[col]],conf.int = 0.95))$conf.int[1],
+                     ciU = (wilcox.test(xx[[col]],conf.int = 0.95))$conf.int[2]
+                   )
+                 },
+                 measurevar
+  )
+  
+  # Rename the "mean" column    
+  datac <- rename(datac, c("mean" = measurevar))
+  
+  datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+  
+  
+  return(datac)
+}
+
+
 ## Norms the data within specified groups in a data frame; it normalizes each
 ## subject (identified by idvar) so that they have the same mean, within each group
 ## specified by betweenvars.
