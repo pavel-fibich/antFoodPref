@@ -107,14 +107,16 @@ a<-plot(mydf) + scale_y_log10() + xlab("Mean temperature [deg. C]")+ylab(text_pi
   scale_color_manual(values = trcol) + theme_light()+theme(legend.position = c(0.2, 0.65))+
   ggtitle("")#+ylim(0,15)
 
+
 ants<-glm.nb( Visited_picea~ Treatment*Site.Temperature,data=afp)
 mydf <- ggpredict(ants, terms = c("Site.Temperature","Treatment"))
-b<-plot(mydf) + scale_y_log10() + xlab("Site temperature [deg. C]")+ylab(text_visited) +scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "none")+ggtitle("")
+b<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited) +scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "none")+ggtitle("")
+
 
 ggpubr::ggarrange(a, b, 
           labels = c("A", "B"),
           ncol = 2, nrow = 1)
-ggsave(paste0("Fig5_temp.pdf"), width = 8, height = 5)
+ggsave(paste0("Fig3_temp.pdf"), width = 8, height = 5)
 
 
 #FigS1
