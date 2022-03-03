@@ -98,7 +98,7 @@ p
 tag_facet2(p,open="",close="",tag_pool=LETTERS)#,vjust=0)
 ggsave(paste0("Fig2_data_se.pdf"), width = 6, height = 9)
 
-#Fig5
+#Fig3
 library(MASS)
 library(ggeffects)
 antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
@@ -187,7 +187,7 @@ summary(glht(an0,mcp(Year="Tukey", interaction_average = T, covariate_average =T
 summary(glht(avp,mcp(Treatment="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
 summary(glht(avp,mcp(Season="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
 summary(glht(avp,mcp(Site="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
-summary(glht(avp,mcp(Year="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+
 
 #Table S4
 antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
