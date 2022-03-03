@@ -102,7 +102,7 @@ ggsave(paste0("Fig2_data_se.pdf"), width = 6, height = 9)
 library(MASS)
 library(ggeffects)
 antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
-mydf <- ggpredict(antm, terms = c("Mean.Temperature","Treatment"))
+mydf <- ggpredict(antm, terms = c("Mean.Temperature","Treatment"),type="zero_inflated")
 a<-plot(mydf) + scale_y_log10() + xlab("Mean temperature [deg. C]")+ylab(text_piceal) +
   scale_color_manual(values = trcol) + theme_light()+theme(legend.position = c(0.2, 0.65))+
   ggtitle("")#+ylim(0,15)
@@ -157,3 +157,42 @@ p<-ggplot(afpse, aes(factor(Season), Visited_picea))+
   scale_color_manual(values = trcol)+theme_light()
 tag_facet2(p,open="",close="",tag_pool=LETTERS)#,vjust=0)
 ggsave(paste0("FigS2_data_se.pdf"), width = 6, height = 5)
+
+
+## Tables
+
+#Table 1
+# bigger model on abundances (picea)
+an0<-glm.nb( picea~ Treatment+Season+Site+Year+
+               Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+             +Site:Season + Site:Year + Season:Year 
+             ,data=afp)
+anova(an0,test="Chisq")
+
+#Table S1
+avp<-glm( Visited_picea~Treatment+Season+Site+Year+
+            Treatment:Season+Treatment:Site + Treatment:Year+
+            Season:Site+Year:Site+Year:Season
+          ,data=afp, family="binomial")
+anova(avp,test="Chisq")
+
+#Table S2
+library(multcomp)
+summary(glht(an0,mcp(Treatment="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+summary(glht(an0,mcp(Season="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+summary(glht(an0,mcp(Site="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+summary(glht(an0,mcp(Year="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+
+#Table S3
+summary(glht(avp,mcp(Treatment="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+summary(glht(avp,mcp(Season="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+summary(glht(avp,mcp(Site="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+summary(glht(avp,mcp(Year="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+
+#Table S4
+antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
+anova(antm)
+
+#Table S5
+antm<-glm( Visited_picea~ Treatment*Site.Temperature,data=afp,family="binomial")
+anova(antm,test="Chisq")
