@@ -428,10 +428,18 @@ ggsave(paste0("bigyears_log.pdf"), width = 6, height = 9)
 # dev.off()
 
 
+#Petr: posthoc test in document from Pavel, but it is not full-interaction model (an lacks two of NS interactions!)
 summary(glht(an,mcp(Treatment="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
 summary(glht(an,mcp(Season="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
 summary(glht(an,mcp(Year="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
 summary(glht(an,mcp(Site="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+
+
+#Petr: posthoc test run trully on full interaction model from TableS1 (an.0) - but p.values and sign. near the same (no change)
+summary(glht(an0,mcp(Treatment="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+summary(glht(an0,mcp(Season="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+summary(glht(an0,mcp(Year="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
+summary(glht(an0,mcp(Site="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
 
 
 #################
