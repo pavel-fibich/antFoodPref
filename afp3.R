@@ -147,7 +147,30 @@ ggpubr::ggarrange(a, b,
           ncol = 2, nrow = 1)
 ggsave(paste0("FigS1_data_se.pdf"), width = 8, height = 5)
 
-#FigS2
+#FigS2 (added by Petr - treatement times Site difference)
+afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Site"))
+afpse$upp<-afpse[,4]+afpse$se
+afpse$low<-ifelse(afpse[,4]-afpse$se<0,0,afpse[,4]-afpse$se)
+
+a<-ggplot(afpse, aes(factor(Site), picea1))+
+  geom_errorbar(aes(ymin=low,ymax=upp,colour=Treatment), position=position_dodge(0.5)) +
+  geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
+  labs(x="Site",y=text_piceal)+#scale_y_log10() +
+  scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10")+
+  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = c(0.2, 0.4))
+
+afpse2<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Site"))
+b<-ggplot(afpse2, aes(factor(Site), Visited_picea))+
+  geom_errorbar(aes(ymin=Visited_picea-ci,ymax=Visited_picea+ci,colour=Treatment), position=position_dodge(0.5)) +
+  geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
+  labs(x="Site",y=text_visited)+
+  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
+
+ggpubr::ggarrange(a, b, labels = c("A", "B"), ncol = 2, nrow = 1)
+ggsave(paste0("FigS2_data_se.pdf"), width = 8, height = 5)
+
+
+#FigS3
 afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Season","Site"))
 p<-ggplot(afpse, aes(factor(Season), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-se,ymax=Visited_picea+se,colour=Treatment), position=position_dodge(0.5)) +
@@ -156,7 +179,18 @@ p<-ggplot(afpse, aes(factor(Season), Visited_picea))+
   labs(x="Season",y=text_visited)+#scale_y_log10() +
   scale_color_manual(values = trcol)+theme_light()
 tag_facet2(p,open="",close="",tag_pool=LETTERS)#,vjust=0)
-ggsave(paste0("FigS2_data_se.pdf"), width = 6, height = 5)
+ggsave(paste0("FigS3_data_se.pdf"), width = 6, height = 5)
+
+#Petr:FigS3-A (abundance version if we decide to add it to the Suppl. too)
+afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Season","Site"))
+p<-ggplot(afpse, aes(factor(Season), picea1))+
+  geom_errorbar(aes(ymin=picea1-se,ymax=picea1+se,colour=Treatment), position=position_dodge(0.5)) +
+  geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
+  facet_grid(cols=vars(Site))+
+  labs(x="Season",y=text_piceal)+scale_y_log10() +
+  scale_color_manual(values = trcol)+theme_light()
+tag_facet2(p,open="",close="",tag_pool=LETTERS,vjust=0)#fig. works but does not add ABC letters
+ggsave(paste0("FigS3-A_data_se.pdf"), width = 6, height = 5)
 
 
 ## Tables
