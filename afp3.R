@@ -147,6 +147,8 @@ ggpubr::ggarrange(a, b,
           ncol = 2, nrow = 1)
 ggsave(paste0("FigS1_data_se.pdf"), width = 8, height = 5)
 
+
+
 #FigS2 (added by Petr - treatement times Site difference)
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Site"))
 afpse$upp<-afpse[,4]+afpse$se
@@ -203,12 +205,47 @@ an0<-glm.nb( picea~ Treatment+Season+Site+Year+
              ,data=afp)
 anova(an0,test="Chisq")
 
+
+#analysis with incl. Site.Temperature to full model (n.s. except Site:Site.Tempreture)
+anT<-glm.nb( picea~ Treatment+Season+Site+Year+Site.Temperature+
+               Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+             +Site:Season + Site:Year + Season:Year+
+               Site.Temperature:Treatment+Site.Temperature:Season+Site.Temperature:Site+Site.Temperature:Year
+             ,data=afp)
+anova(anT,test="Chisq")
+
+#analysis with incl. Mean.Temperature to full model (n.s. except Site:Mean.Temperature)
+anT2<-glm.nb( picea~ Treatment+Season+Site+Year+Mean.Temperature+
+               Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+             +Site:Season + Site:Year + Season:Year+
+               Mean.Temperature:Treatment+Mean.Temperature:Season+Mean.Temperature:Site+Mean.Temperature:Year
+             ,data=afp)
+anova(anT2,test="Chisq")
+
+
 #Table S1
 avp<-glm( Visited_picea~Treatment+Season+Site+Year+
             Treatment:Season+Treatment:Site + Treatment:Year+
             Season:Site+Year:Site+Year:Season
           ,data=afp, family="binomial")
 anova(avp,test="Chisq")
+
+#analysis with incl. Site.Temperature to full model (n.s. except Site:Site.Temperature)
+avpT<-glm(Visited_picea~ Treatment+Season+Site+Year+Site.Temperature+
+               Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+             +Site:Season + Site:Year + Season:Year+
+               Site.Temperature:Treatment+Site.Temperature:Season+Site.Temperature:Site+Site.Temperature:Year
+             ,data=afp, family="binomial")
+anova(anT,test="Chisq")
+
+#analysis with incl. Mean.Temperature to full model (n.s. except Site:Mean.Temperature)
+avpT2<-glm( Visited_picea~Treatment+Season+Site+Year+Mean.Temperature+
+                Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+              +Site:Season + Site:Year + Season:Year+
+                Mean.Temperature:Treatment+Mean.Temperature:Season+Mean.Temperature:Site+Mean.Temperature:Year
+              ,data=afp, family="binomial")
+anova(anT2,test="Chisq")
+
 
 #Table S2
 library(multcomp)
