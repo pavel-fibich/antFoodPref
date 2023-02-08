@@ -205,6 +205,23 @@ an0<-glm.nb( picea~ Treatment+Season+Site+Year+
              ,data=afp)
 anova(an0,test="Chisq")
 
+#diskuse na linku nize, ze Car:Anova pocita TypeII a III, a u balancovaneho desgnu by vysledek (pecka) mela byt stejna bez ohledu na Type,
+#ale jen pouze kdyz promenne nastavene contr.sum na stejne hladiny (jinak vypocet Type II a III je v R chybny a meni se vysledky
+#i u balancovaneho designu, kde by s menit nemely:
+# https://stackoverflow.com/questions/68741417/caranova-in-r-gives-different-p-values-for-typeii-vs-typeiii-even-though-i-hav
+library(car)
+Anova(an0)#automaticky typ II, lze menit jen an II a III (ne jedna)
+Anova(an0, data = afp, contrasts=list(Treatment=contr.sum, Season=contr.sum, Site=contr.sum, Year=contr.sum), type=3)
+#contrast=list nefunguje, porad vyjizdi stejne rozdily jako predtim mezi modely 
+
+#vyzkouseni na klasickych Anova (F stat) i kdyz zde jen na zk - u nb distribcue maji byt chisq
+anova(an0, test = "F") #type 1 - Fstat pres tuhle fci dava stejne p jako Chisq (zadna zmena!, porad bere jako nb model)
+aov(an0) #type 1 dle linku, nedava p ale sumy R2 stejne jako nize
+A = aov (an0) # definovani testu pres aov
+summary(A) # ted uz s p, a stejne vysledky jako nize, TypeI stejny jako Type II a III
+Anova(lm(an0)) #automaticky type 2, warning effect might be unbalanced...
+Anova(lm(an0, data = afp, contrasts=list(Treatment=contr.sum, Season=contr.sum, Site=contr.sum, Year=contr.sum)), type=3)
+#zde to funguje - stejne vysledky vsude jako na linku pro Type I, II a III (plati jen pro F stat!!! na "normalnim rozdeleni?")
 
 #analysis with incl. Site.Temperature to full model (n.s. except Site:Site.Tempreture)
 anT<-glm.nb( picea~ Treatment+Season+Site+Year+Site.Temperature+
