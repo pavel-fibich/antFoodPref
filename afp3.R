@@ -194,6 +194,18 @@ p<-ggplot(afpse, aes(factor(Season), picea1))+
 tag_facet2(p,open="",close="",tag_pool=LETTERS,vjust=0)#fig. works but does not add ABC letters
 ggsave(paste0("FigS3-A_data_se.pdf"), width = 6, height = 5)
 
+## Temperature effects only (for text)
+antSiteT<-glm.nb( picea~ Site.Temperature ,data=afp)
+anova(antSiteT,test="Chisq")
+
+antMeanT<-glm.nb( picea~ Mean.Temperature ,data=afp)
+anova(antMeanT,test="Chisq")
+
+avpSiteT<-glm( Visited_picea~ Site.Temperature ,data=afp,family="binomial")
+anova(avpSiteT,test="Chisq")
+
+avpMeanT<-glm( Visited_picea~ Mean.Temperature ,data=afp, family="binomial")
+anova(avpMeanT,test="Chisq")
 
 ## Tables
 
