@@ -149,7 +149,7 @@ ggsave(paste0("FigS1_data_se.pdf"), width = 8, height = 5)
 
 
 
-#FigS2 (added by Petr - treatement times Site difference)
+#FigS2 (added by Petr - treatment times Site difference)
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Site"))
 afpse$upp<-afpse[,4]+afpse$se
 afpse$low<-ifelse(afpse[,4]-afpse$se<0,0,afpse[,4]-afpse$se)
@@ -212,9 +212,10 @@ anova(an0,test="Chisq")
 library(car)
 Anova(an0)#automaticky typ II, lze menit jen an II a III (ne jedna)
 Anova(an0, data = afp, contrasts=list(Treatment=contr.sum, Season=contr.sum, Site=contr.sum, Year=contr.sum), type=3)
+deviance(an0)
 #contrast=list nefunguje, porad vyjizdi stejne rozdily jako predtim mezi modely 
 
-#vyzkouseni na klasickych Anova (F stat) i kdyz zde jen na zk - u nb distribcue maji byt chisq
+#vyzkouseni na klasickych Anova (F stat) i kdyz zde jen na zk - u nb distribuce maji byt chisq
 anova(an0, test = "F") #type 1 - Fstat pres tuhle fci dava stejne p jako Chisq (zadna zmena!, porad bere jako nb model)
 aov(an0) #type 1 dle linku, nedava p ale sumy R2 stejne jako nize
 A = aov (an0) # definovani testu pres aov
@@ -223,7 +224,7 @@ Anova(lm(an0)) #automaticky type 2, warning effect might be unbalanced...
 Anova(lm(an0, data = afp, contrasts=list(Treatment=contr.sum, Season=contr.sum, Site=contr.sum, Year=contr.sum)), type=3)
 #zde to funguje - stejne vysledky vsude jako na linku pro Type I, II a III (plati jen pro F stat!!! na "normalnim rozdeleni?")
 
-#analysis with incl. Site.Temperature to full model (n.s. except Site:Site.Tempreture)
+#analysis with incl. Site.Temperature to full model (n.s. except Site:Site.Temperature)
 anT<-glm.nb( picea~ Treatment+Season+Site+Year+Site.Temperature+
                Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
              +Site:Season + Site:Year + Season:Year+
@@ -247,17 +248,22 @@ avp<-glm( Visited_picea~Treatment+Season+Site+Year+
           ,data=afp, family="binomial")
 anova(avp,test="Chisq")
 
-#analysis with incl. Site.Temperature to full model (n.s. except Site:Site.Temperature)
+#comparison to TypeIII testing in car package
+library(car)
+Anova(avp, data = afp, type=3)
+deviance(avp)
+
+#analysis with incl. Site.Temperature to full model (n.s.)
 avpT<-glm(Visited_picea~ Treatment+Season+Site+Year+Site.Temperature+
-               Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+               Treatment:Season+Treatment:Site + Treatment:Year 
              +Site:Season + Site:Year + Season:Year+
                Site.Temperature:Treatment+Site.Temperature:Season+Site.Temperature:Site+Site.Temperature:Year
              ,data=afp, family="binomial")
-anova(anT,test="Chisq")
+anova(avpT,test="Chisq")
 
 #analysis with incl. Mean.Temperature to full model (n.s. except Site:Mean.Temperature)
 avpT2<-glm( Visited_picea~Treatment+Season+Site+Year+Mean.Temperature+
-                Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+                Treatment:Season+Treatment:Site + Treatment:Year
               +Site:Season + Site:Year + Season:Year+
                 Mean.Temperature:Treatment+Mean.Temperature:Season+Mean.Temperature:Site+Mean.Temperature:Year
               ,data=afp, family="binomial")
@@ -279,8 +285,30 @@ summary(glht(avp,mcp(Site="Tukey", interaction_average = T, covariate_average =T
 
 #Table S4
 antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
-anova(antm)
+anova(antm, test="Chisq")
+
+#comparison to TypeIII testing in car package
+library(car)
+Anova(antm, data = afp, type=3)
+deviance(antm)
+
+#Deviance comparison
+an0_null<-glm.nb( picea~ 1, data=afp)
+anova (an0_null)
+deviance(an0_null) # 1417.3 / diff. value from Treatment, and Treatment * Mean.Temperature models (changes deviance values among models in nb due Theta parameter!)
+
+an0_treatment<-glm.nb( picea~ Treatment, data=afp)
+anova (an0_treatment)
+deviance(an0_treatment) # NULL 3344.4 / Treatment 1321.2 / D2 = 0.605 (however D2 stays the same and is comparable unlike deviance)
+deviance (antm)# 1320.8 / # NULL 3381.4 in the full model / Treatment 1320.8 in both call amnd full model output / D2 = 0.609
+
 
 #Table S5
-antm<-glm( Visited_picea~ Treatment*Site.Temperature,data=afp,family="binomial")
-anova(antm,test="Chisq")
+antm2<-glm( Visited_picea~ Treatment*Site.Temperature,data=afp,family="binomial")
+anova(antm2,test="Chisq")
+
+#comparison to TypeIII testing in car package
+library(car)
+Anova(antm2, data = afp, type=3)
+deviance(antm2)
+
