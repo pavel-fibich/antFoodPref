@@ -7,6 +7,18 @@ if (FALSE) { #just for git commits/pulls
 }
 
 #################
+# load packages
+library(ggplot2)
+library(ggpubr)
+library(MASS)
+library(ggeffects)
+library(egg)
+library(car)
+library(multcomp)
+library (modEvA)
+
+
+#################
 # read data set factors
 afp<-read.csv("Picea-DATA.csv")
 names(afp)
@@ -20,9 +32,6 @@ for (i in c(allfa,"YearSeason","SeasonSite","SiteYear")) afp[,i] <- as.factor(af
 afp$Treatment<-relevel(afp$Treatment,"Oil")
 afp$Treatment<-relevel(afp$Treatment,"Control")
 onedata<-afp[ (afp$Site =="BK") & (afp$Year == 2017) & (afp$Season ==1),]
-
-library(ggplot2)
-library(ggpubr)
 theme_set(theme_light())
 source("summarySE.R") # source file with summary functions
 trcol<-c("blue","red","green","violet") # colors used in plots
@@ -65,7 +74,6 @@ ggpubr::ggarrange(a, b, labels = c("A", "B"), ncol = 2, nrow = 1)
 ggsave(paste0("Fig1_data_se.pdf"), width = 8, height = 5)
 
 #Fig2
-library(egg)
 # tag_facet breaks ggplot theme
 tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf, y = Inf, 
                       hjust = -0.5, vjust = 1.5, fontface = 2, family = "", ...) {
@@ -98,9 +106,13 @@ p
 tag_facet2(p,open="",close="",tag_pool=LETTERS)#,vjust=0)
 ggsave(paste0("Fig2_data_se.pdf"), width = 6, height = 9)
 
-#Fig3
-library(MASS)
-library(ggeffects)
+#Fig3 new verions (former B only)
+ants<-glm.nb( Visited_picea~ Treatment*Site.Temperature,data=afp)
+mydf <- ggpredict(ants, terms = c("Site.Temperature","Treatment"))
+b<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited) +scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "none")+ggtitle("")
+
+ggsave(paste0("Fig3_temp.pdf"), width = 8, height = 5, units = "mm")
+
 antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
 mydf <- ggpredict(antm, terms = c("Mean.Temperature","Treatment"),type="zero_inflated")
 a<-plot(mydf) + scale_y_log10() + xlab("Mean temperature [deg. C]")+ylab(text_piceal) +
@@ -212,7 +224,7 @@ anova(avpMeanT,test="Chisq")
 #Table 1
 # bigger model on abundances (picea)
 an0<-glm.nb( picea~ Treatment+Season+Site+Year+
-               Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+               Treatment:Season+Treatment:Site + Treatment:Year
              +Site:Season + Site:Year + Season:Year 
              ,data=afp)
 anova(an0,test="Chisq")
@@ -221,10 +233,11 @@ anova(an0,test="Chisq")
 #ale jen pouze kdyz promenne nastavene contr.sum na stejne hladiny (jinak vypocet Type II a III je v R chybny a meni se vysledky
 #i u balancovaneho designu, kde by s menit nemely:
 # https://stackoverflow.com/questions/68741417/caranova-in-r-gives-different-p-values-for-typeii-vs-typeiii-even-though-i-hav
-library(car)
 Anova(an0)#automaticky typ II, lze menit jen an II a III (ne jedna)
 Anova(an0, data = afp, contrasts=list(Treatment=contr.sum, Season=contr.sum, Site=contr.sum, Year=contr.sum), type=3)
+Anova (an0, type=3)
 deviance(an0)
+summary(an0)
 #contrast=list nefunguje, porad vyjizdi stejne rozdily jako predtim mezi modely 
 
 #vyzkouseni na klasickych Anova (F stat) i kdyz zde jen na zk - u nb distribuce maji byt chisq
@@ -238,20 +251,25 @@ Anova(lm(an0, data = afp, contrasts=list(Treatment=contr.sum, Season=contr.sum, 
 
 #analysis with incl. Site.Temperature to full model (n.s. except Site:Site.Temperature)
 anT<-glm.nb( picea~ Treatment+Season+Site+Year+Site.Temperature+
-               Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+               Treatment:Season+Treatment:Site + Treatment:Year
              +Site:Season + Site:Year + Season:Year+
                Site.Temperature:Treatment+Site.Temperature:Season+Site.Temperature:Site+Site.Temperature:Year
              ,data=afp)
 anova(anT,test="Chisq")
+#analysis with incl. Site.Temperature to full model (all n.s. if Type III testing)
+Anova(anT, type=3)
+summary (anT)
+anova (an0, anT) #model with temperature only slightly better (p=0.01, dAIC = 2.9 and temperature N.s.)
 
 #analysis with incl. Mean.Temperature to full model (n.s. except Site:Mean.Temperature)
 anT2<-glm.nb( picea~ Treatment+Season+Site+Year+Mean.Temperature+
-               Treatment:Season+Treatment:Site + Treatment:Year #+ Site:Year
+               Treatment:Season+Treatment:Site + Treatment:Year
              +Site:Season + Site:Year + Season:Year+
                Mean.Temperature:Treatment+Mean.Temperature:Season+Mean.Temperature:Site+Mean.Temperature:Year
              ,data=afp)
 anova(anT2,test="Chisq")
-
+#analysis with incl. Site.Temperature to full model (all n.s. except Site:Mean.Temperature in Type III testing)
+Anova(anT2, type=3)
 
 #Table S1
 avp<-glm( Visited_picea~Treatment+Season+Site+Year+
@@ -261,9 +279,9 @@ avp<-glm( Visited_picea~Treatment+Season+Site+Year+
 anova(avp,test="Chisq")
 
 #comparison to TypeIII testing in car package
-library(car)
 Anova(avp, data = afp, type=3)
 deviance(avp)
+summary (avp)
 
 #analysis with incl. Site.Temperature to full model (n.s.)
 avpT<-glm(Visited_picea~ Treatment+Season+Site+Year+Site.Temperature+
@@ -272,6 +290,10 @@ avpT<-glm(Visited_picea~ Treatment+Season+Site+Year+Site.Temperature+
                Site.Temperature:Treatment+Site.Temperature:Season+Site.Temperature:Site+Site.Temperature:Year
              ,data=afp, family="binomial")
 anova(avpT,test="Chisq")
+#analysis with incl. Site.Temperature to full model (all n.s. in Type III testing too)
+Anova(avpT, type=3)
+summary (avpT)
+
 
 #analysis with incl. Mean.Temperature to full model (n.s. except Site:Mean.Temperature)
 avpT2<-glm( Visited_picea~Treatment+Season+Site+Year+Mean.Temperature+
@@ -279,11 +301,11 @@ avpT2<-glm( Visited_picea~Treatment+Season+Site+Year+Mean.Temperature+
               +Site:Season + Site:Year + Season:Year+
                 Mean.Temperature:Treatment+Mean.Temperature:Season+Mean.Temperature:Site+Mean.Temperature:Year
               ,data=afp, family="binomial")
-anova(anT2,test="Chisq")
-
+anova(avpT2,test="Chisq")
+#analysis with incl. Site.Temperature to full model (all n.s. in Type III testing too)
+Anova(avpT2, type=3)
 
 #Table S2
-library(multcomp)
 summary(glht(an0,mcp(Treatment="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
 summary(glht(an0,mcp(Season="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
 summary(glht(an0,mcp(Site="Tukey", interaction_average = T, covariate_average =T)),test = adjusted("holm"))
@@ -300,19 +322,23 @@ antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
 anova(antm, test="Chisq")
 
 #comparison to TypeIII testing in car package
-library(car)
 Anova(antm, data = afp, type=3)
 deviance(antm)
+summary(antm)
+#Deviance-square D2 explained by ModEva package call does not work for negative binomial (also does not work in Moses et al. Biotropica 2021 code where it used to work, same error - package perhapsupdated and nb off)
+Dsquared(antm, adjust = F)
 
 #Deviance comparison
 an0_null<-glm.nb( picea~ 1, data=afp)
 anova (an0_null)
 deviance(an0_null) # 1417.3 / diff. value from Treatment, and Treatment * Mean.Temperature models (changes deviance values among models in nb due Theta parameter!)
+# however summary of model coefficients gives the same residual and null deviance as TypeI, shall be equivalent and recalculated to the same D2 without need to fit null model separately
 
 an0_treatment<-glm.nb( picea~ Treatment, data=afp)
 anova (an0_treatment)
 deviance(an0_treatment) # NULL 3344.4 / Treatment 1321.2 / D2 = 0.605 (however D2 stays the same and is comparable unlike deviance)
-deviance (antm)# 1320.8 / # NULL 3381.4 in the full model / Treatment 1320.8 in both call amnd full model output / D2 = 0.609
+summary(an0_treatment)
+deviance (antm)# 1320.8 / # NULL 3381.4 in the full model / Treatment 1320.8 in both call and full model output / D2 = 0.609
 
 
 #Table S5
@@ -320,7 +346,7 @@ antm2<-glm( Visited_picea~ Treatment*Site.Temperature,data=afp,family="binomial"
 anova(antm2,test="Chisq")
 
 #comparison to TypeIII testing in car package
-library(car)
 Anova(antm2, data = afp, type=3)
+summary(antm2)
 deviance(antm2)
 
