@@ -21,7 +21,6 @@ library(ggeffects)
 library(egg)
 library(car)
 library(multcomp)
-library (modEvA)
 
 
 #################
@@ -105,7 +104,11 @@ ggsave(paste0("Fig2.pdf"), width = 7, height = 9.4)
 #Fig3
 ants<-glm.nb( Visited_picea~ Treatment*Site.Temperature,data=afp)
 mydf <- ggpredict(ants, terms = c("Site.Temperature","Treatment"))
-b<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited) +scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "none")+ggtitle("")
+fig3<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
+scale_color_manual(values = trcol) + theme_light()+theme(legend.position = c(0.2, 0.65))+ggtitle("")
+
+fig3<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
+  scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
 
 ggsave(paste0("Fig3_temp.pdf"), width = 120, height = 110, units = "mm")
 
