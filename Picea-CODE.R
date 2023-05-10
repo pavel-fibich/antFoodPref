@@ -43,7 +43,7 @@ trcol<-c("blue","red","green","violet") # colors used in plots
 
 text_piceal<-"Worker abundance"
 text_visited<-"Proportions of visited baits"
-logbreaks<-c(1,2,11,31,91)
+logbreaks<-c(1,1.5,2,6,11,21,31,91)
 
 ########
 # Figs
@@ -61,11 +61,11 @@ a<-ggplot(afpse, aes(factor(Season), picea1))+
   geom_errorbar(aes(ymin=low,ymax=upp,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Season",y=text_piceal)+
-  scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10")+
+  scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10",minor_breaks=NULL)+
   scale_color_manual(values = trcol)+theme_light()+
   guides(color=guide_legend(nrow=1, byrow=F))+
   theme(legend.position = "none",plot.margin=unit(legdown, 'cm') )
-
+a
 afpse2<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Season"))
 b<-ggplot(afpse2, aes(factor(Season), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-ci,ymax=Visited_picea+ci,colour=Treatment), position=position_dodge(0.5)) +
@@ -106,7 +106,7 @@ p<-ggplot(afpse, aes(factor(Season), picea1))+
   scale_color_manual(values = trcol)+theme_light()+
   guides(color=guide_legend(nrow=1, byrow=F))+
   theme(legend.position = "bottom",legend.direction="horizontal") +
-  scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10")
+  scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10",minor_breaks=NULL)
 p
 tag_facet2(p,open="(",close=")",tag_pool = letters)
 ggsave(paste0("Fig2.pdf"), width = 7, height = 9.4)
@@ -131,7 +131,7 @@ a<-ggplot(afpse, aes(factor(Treatment), picea1))+
   geom_errorbar(aes(ymin=low,ymax=upp,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Treatment",y=text_piceal)+
-  scale_y_continuous(breaks=logbreaks[1:4], labels=logbreaks[1:4]-1, trans="log10")+
+  scale_y_continuous(breaks=logbreaks[1:6], labels=logbreaks[1:6]-1, minor_breaks=NULL,trans="log10")+
   scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
 
 afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment"))
@@ -158,7 +158,7 @@ a<-ggplot(afpse, aes(factor(Site), picea1))+
   geom_errorbar(aes(ymin=low,ymax=upp,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Site",y=text_piceal)+
-  scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10")+
+  scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10",minor_breaks=NULL)+
   scale_color_manual(values = trcol)+theme_light()+
   theme(legend.position = "none",plot.margin=unit(legdown, 'cm') )
   #theme(legend.position = c(0.2, 0.4))
