@@ -51,32 +51,38 @@ logbreaks<-c(1,2,11,31,91)
 # Petr for Pavel - for all abundance figures look if possible re-scale log x axis with each line = an abundance number of rounded digit (e.g.1,5,10,20,100 etc.)
 
 #Fig1
-# Petr for Pavel - size ok now, but treatment legend and A/B overlap with Figure - possible to move legend in the bottom? 
+# x Petr for Pavel - size ok now, but treatment legend and A/B overlap with Figure - possible to move legend in the bottom? 
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Season"))
 afpse$upp<-afpse[,4]+afpse$se
 afpse$low<-ifelse(afpse[,4]-afpse$se<0,0,afpse[,4]-afpse$se)
+legdown<-c(0.5,0.5, 0.2,0.5)
 
 a<-ggplot(afpse, aes(factor(Season), picea1))+
   geom_errorbar(aes(ymin=low,ymax=upp,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Season",y=text_piceal)+
   scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10")+
-  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = c(0.2, 0.4))
+  scale_color_manual(values = trcol)+theme_light()+
+  guides(color=guide_legend(nrow=1, byrow=F))+
+  theme(legend.position = "none",plot.margin=unit(legdown, 'cm') )
 
 afpse2<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Season"))
 b<-ggplot(afpse2, aes(factor(Season), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-ci,ymax=Visited_picea+ci,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Season",y=text_visited)+
-  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
+  scale_color_manual(values = trcol)+theme_light()+
+  guides(color=guide_legend(nrow=1, byrow=F,title.position = "bottom"))+
+  theme(legend.position = "bottom",legend.direction="horizontal",plot.margin=unit(legdown, 'cm'))
+  
 
-ggpubr::ggarrange(a, b, labels = c("(a)", "(b)"), ncol = 2, nrow = 1)
+ggpubr::ggarrange(a, b, common.legend=T, legend = "bottom",labels = c("(a)", "(b)"), ncol = 2, nrow = 1)
 ggsave(paste0("Fig1.pdf"), width = 140, height = 100, units = "mm")
 
 
 ####################################FIGURES##################################################
 # tag_facet breaks ggplot theme
-# Petr for Pavel - fig and font size ok, but possible yet to move legend of treatment to bottom?, also letters missing (a), (b) brackets in the panel,if difficult Petr can modify in pdf manually
+# x Petr for Pavel - fig and font size ok, but possible yet to move legend of treatment to bottom?, also letters missing (a), (b) brackets in the panel,if difficult Petr can modify in pdf manually
 tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf, y = Inf, 
                        hjust = -0.5, vjust = 1.5, fontface = 2, family = "", ...) {
   gb <- ggplot_build(p)
@@ -89,16 +95,20 @@ tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf,
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Season","Site","Year"))
 afpse$upp<-afpse[,6]+afpse$se
 afpse$low<-ifelse(afpse[,6]-afpse$se<0,0,afpse[,6]-afpse$se)
+Site.labs <- c("Bílý Kámen", "Jankov", "Radostín")
+names(Site.labs) <- c("BK", "Jan", "Rad")
 
 
 p<-ggplot(afpse, aes(factor(Season), picea1))+
   geom_errorbar(aes(ymin=low,ymax=upp,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
-  facet_grid(Year~Site)+labs(x="Season",y=text_piceal)+
+  facet_grid(Year~Site,labeller = labeller(Site = Site.labs))+labs(x="Season",y=text_piceal)+
   scale_color_manual(values = trcol)+theme_light()+
+  guides(color=guide_legend(nrow=1, byrow=F))+
+  theme(legend.position = "bottom",legend.direction="horizontal") +
   scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10")
 p
-tag_facet2(p,open="",close="",tag_pool = letters)
+tag_facet2(p,open="(",close=")",tag_pool = letters)
 ggsave(paste0("Fig2.pdf"), width = 7, height = 9.4)
 
 #Fig3
@@ -113,7 +123,7 @@ fig3<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited)+
 ggsave(paste0("Fig3_temp.pdf"), width = 120, height = 110, units = "mm")
 
 #FigS1
-# Petr for Pavel - size ok now, but treatment legend overlap with Figure - possible to move legend in the bottom? 
+# x Petr for Pavel - size ok now, but treatment legend overlap with Figure - possible to move legend in the bottom? 
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment"))
 afpse$upp<-afpse[,3]+afpse$se
 afpse$low<-ifelse(afpse[,3]-afpse$se<0,0,afpse[,3]-afpse$se)
@@ -122,52 +132,63 @@ a<-ggplot(afpse, aes(factor(Treatment), picea1))+
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Treatment",y=text_piceal)+
   scale_y_continuous(breaks=logbreaks[1:4], labels=logbreaks[1:4]-1, trans="log10")+
-  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = c(0.2,0.6))
+  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
 
 afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment"))
 b<-ggplot(afpse, aes(factor(Treatment), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-ci,ymax=Visited_picea+ci,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Treatment",y=text_visited)+
+  #guides(color=guide_legend(nrow=1, byrow=F))+
+  #theme(legend.position = "bottom",legend.direction="horizontal") +
   scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
-ggpubr::ggarrange(a, b, 
+ggpubr::ggarrange(a, b, #common.legend=F, legend = "bottom",
                   labels = c("(a)", "(b)"),
                   ncol = 2, nrow = 1)
 ggsave(paste0("FigS1.pdf"), width = 7, height = 5)
 
 #FigS2
-# Petr for Pavel - size ok now, but treatment legend and A/B overlap with Figure - possible to move legend in the bottom? / Site legend - Bily Kamen, Jankov, Radostin
+# x Petr for Pavel - size ok now, but treatment legend and A/B overlap with Figure - possible to move legend in the bottom? / Site legend - Bily Kamen, Jankov, Radostin
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Site"))
 afpse$upp<-afpse[,4]+afpse$se
 afpse$low<-ifelse(afpse[,4]-afpse$se<0,0,afpse[,4]-afpse$se)
+legdown<-c(0.5,0.5, 0.2,0.5)
 
 a<-ggplot(afpse, aes(factor(Site), picea1))+
   geom_errorbar(aes(ymin=low,ymax=upp,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Site",y=text_piceal)+
   scale_y_continuous(breaks=logbreaks, labels=logbreaks-1, trans="log10")+
-  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = c(0.2, 0.4))
+  scale_color_manual(values = trcol)+theme_light()+
+  theme(legend.position = "none",plot.margin=unit(legdown, 'cm') )
+  #theme(legend.position = c(0.2, 0.4))
 
 afpse2<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Site"))
 b<-ggplot(afpse2, aes(factor(Site), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-ci,ymax=Visited_picea+ci,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Site",y=text_visited)+
-  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
+  scale_color_manual(values = trcol)+theme_light()+
+  theme(legend.position = "none",plot.margin=unit(legdown, 'cm') )
+  #theme(legend.position = "none")
 
-ggpubr::ggarrange(a, b, labels = c("(a)", "(b)"), ncol = 2, nrow = 1)
+ggpubr::ggarrange(a, b, labels = c("(a)", "(b)"), 
+                  common.legend=T, legend = "bottom",ncol = 2, nrow = 1)
 ggsave(paste0("FigS2.pdf"), width = 7, height = 5)
 
 #FigS3
-# Petr for Pavel / Treatment legend better to bottom, Site legend to full = Bily Kamen, Jankov, Radostin in full, letters apear in automate letters without brackets (a) (b) / if difficult change Petr can adapt in pdf
+# x Petr for Pavel / Treatment legend better to bottom, Site legend to full = Bily Kamen, Jankov, Radostin in full, letters apear in automate letters without brackets (a) (b) / if difficult change Petr can adapt in pdf
 afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Season","Site"))
 p<-ggplot(afpse, aes(factor(Season), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-se,ymax=Visited_picea+se,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
-  facet_grid(cols=vars(Site))+
+  facet_grid(cols=vars(Site),labeller = labeller(Site = Site.labs))+
   labs(x="Season",y=text_visited)+
-  scale_color_manual(values = trcol)+theme_light()
-tag_facet2(p,open="",close="",tag_pool=letters)
+  scale_color_manual(values = trcol)+theme_light()+
+  guides(color=guide_legend(nrow=1, byrow=F))+
+  theme(legend.position = "bottom",legend.direction="horizontal") 
+  
+tag_facet2(p,open="(",close=")",tag_pool=letters)
 ggsave(paste0("FigS3.pdf"), width = 7, height = 5)
 
 ####################################MODELS##################################################
