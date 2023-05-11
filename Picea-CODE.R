@@ -92,9 +92,8 @@ tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf,
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Season","Site","Year"))
 afpse$upp<-afpse[,6]+afpse$se
 afpse$low<-ifelse(afpse[,6]-afpse$se<0,0,afpse[,6]-afpse$se)
-Site.labs <- c("Bílý Kámen", "Jankov", "Radostín")
+Site.labs <- c("Bily Kamen", "Jankov", "Radostin")
 names(Site.labs) <- c("BK", "Jan", "Rad")
-
 
 p<-ggplot(afpse, aes(factor(Season), picea1))+
   geom_errorbar(aes(ymin=low,ymax=upp,colour=Treatment), position=position_dodge(0.5)) +
@@ -128,7 +127,8 @@ a<-ggplot(afpse, aes(factor(Treatment), picea1))+
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Treatment",y=text_piceal)+
   scale_y_continuous(breaks=logbreaks[1:6], labels=logbreaks[1:6]-1, minor_breaks=NULL,trans="log10")+
-  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
+  scale_color_manual(values = trcol)+theme_light()+
+  theme(legend.position = "none",plot.margin=unit(legdown, 'cm'))
 
 afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment"))
 b<-ggplot(afpse, aes(factor(Treatment), Visited_picea))+
@@ -137,7 +137,8 @@ b<-ggplot(afpse, aes(factor(Treatment), Visited_picea))+
   labs(x="Treatment",y=text_visited)+
   #guides(color=guide_legend(nrow=1, byrow=F))+
   #theme(legend.position = "bottom",legend.direction="horizontal") +
-  scale_color_manual(values = trcol)+theme_light()+theme(legend.position = "none")
+  scale_color_manual(values = trcol)+theme_light()+
+  theme(legend.position = "none",plot.margin=unit(legdown, 'cm'))
 ggpubr::ggarrange(a, b, #common.legend=F, legend = "bottom",
                   labels = c("(a)", "(b)"),
                   ncol = 2, nrow = 1)
@@ -149,8 +150,9 @@ afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Site"))
 afpse$upp<-afpse[,4]+afpse$se
 afpse$low<-ifelse(afpse[,4]-afpse$se<0,0,afpse[,4]-afpse$se)
 legdown<-c(0.5,0.5, 0.2,0.5)
-
-a<-ggplot(afpse, aes(factor(Site), picea1))+
+afpse$SiteLong<-factor(afpse$Site)
+levels(afpse$SiteLong)<-Site.labs
+a<-ggplot(afpse, aes(factor(SiteLong), picea1))+
   geom_errorbar(aes(ymin=low,ymax=upp,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Site",y=text_piceal)+
@@ -160,7 +162,9 @@ a<-ggplot(afpse, aes(factor(Site), picea1))+
   #theme(legend.position = c(0.2, 0.4))
 
 afpse2<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Site"))
-b<-ggplot(afpse2, aes(factor(Site), Visited_picea))+
+afpse2$SiteLong<-factor(afpse2$Site)
+levels(afpse2$SiteLong)<-Site.labs
+b<-ggplot(afpse2, aes(factor(SiteLong), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-ci,ymax=Visited_picea+ci,colour=Treatment), position=position_dodge(0.5)) +
   geom_point(aes(group=Treatment,color=Treatment,shape=Treatment),position=position_dodge(0.5)) + 
   labs(x="Site",y=text_visited)+
