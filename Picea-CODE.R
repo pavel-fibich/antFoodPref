@@ -48,10 +48,8 @@ logbreaks<-c(1,1.5,2,6,11,21,31,91)
 ########
 # Figs
 # Submitted figures should not exceed the print area of 174 X 234 mm (approx. 7 X 9.4 inches).
-# Petr for Pavel - for all abundance figures look if possible re-scale log x axis with each line = an abundance number of rounded digit (e.g.1,5,10,20,100 etc.)
 
 #Fig1
-# x Petr for Pavel - size ok now, but treatment legend and A/B overlap with Figure - possible to move legend in the bottom? 
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Season"))
 afpse$upp<-afpse[,4]+afpse$se
 afpse$low<-ifelse(afpse[,4]-afpse$se<0,0,afpse[,4]-afpse$se)
@@ -82,7 +80,6 @@ ggsave(paste0("Fig1.pdf"), width = 140, height = 100, units = "mm")
 
 ####################################FIGURES##################################################
 # tag_facet breaks ggplot theme
-# x Petr for Pavel - fig and font size ok, but possible yet to move legend of treatment to bottom?, also letters missing (a), (b) brackets in the panel,if difficult Petr can modify in pdf manually
 tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf, y = Inf, 
                        hjust = -0.5, vjust = 1.5, fontface = 2, family = "", ...) {
   gb <- ggplot_build(p)
@@ -120,10 +117,9 @@ scale_color_manual(values = trcol) + theme_light()+theme(legend.position = c(0.2
 fig3<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
   scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
 
-ggsave(paste0("Fig3_temp.pdf"), width = 120, height = 110, units = "mm")
+ggsave(paste0("Fig3.pdf"), width = 120, height = 110, units = "mm")
 
-#FigS1
-# x Petr for Pavel - size ok now, but treatment legend overlap with Figure - possible to move legend in the bottom? 
+#FigS3
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment"))
 afpse$upp<-afpse[,3]+afpse$se
 afpse$low<-ifelse(afpse[,3]-afpse$se<0,0,afpse[,3]-afpse$se)
@@ -145,10 +141,10 @@ b<-ggplot(afpse, aes(factor(Treatment), Visited_picea))+
 ggpubr::ggarrange(a, b, #common.legend=F, legend = "bottom",
                   labels = c("(a)", "(b)"),
                   ncol = 2, nrow = 1)
-ggsave(paste0("FigS1.pdf"), width = 7, height = 5)
+ggsave(paste0("FigS3.pdf"), width = 7, height = 5)
 
-#FigS2
-# x Petr for Pavel - size ok now, but treatment legend and A/B overlap with Figure - possible to move legend in the bottom? / Site legend - Bily Kamen, Jankov, Radostin
+#FigS4
+# x Petr for Pavel -  Site legend yet to Bily Kamen, Jankov, Radostin
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Site"))
 afpse$upp<-afpse[,4]+afpse$se
 afpse$low<-ifelse(afpse[,4]-afpse$se<0,0,afpse[,4]-afpse$se)
@@ -174,10 +170,9 @@ b<-ggplot(afpse2, aes(factor(Site), Visited_picea))+
 
 ggpubr::ggarrange(a, b, labels = c("(a)", "(b)"), 
                   common.legend=T, legend = "bottom",ncol = 2, nrow = 1)
-ggsave(paste0("FigS2.pdf"), width = 7, height = 5)
+ggsave(paste0("FigS4.pdf"), width = 7, height = 5)
 
-#FigS3
-# x Petr for Pavel / Treatment legend better to bottom, Site legend to full = Bily Kamen, Jankov, Radostin in full, letters apear in automate letters without brackets (a) (b) / if difficult change Petr can adapt in pdf
+#FigS
 afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Season","Site"))
 p<-ggplot(afpse, aes(factor(Season), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-se,ymax=Visited_picea+se,colour=Treatment), position=position_dodge(0.5)) +
@@ -189,7 +184,7 @@ p<-ggplot(afpse, aes(factor(Season), Visited_picea))+
   theme(legend.position = "bottom",legend.direction="horizontal") 
   
 tag_facet2(p,open="(",close=")",tag_pool=letters)
-ggsave(paste0("FigS3.pdf"), width = 7, height = 5)
+ggsave(paste0("FigS5.pdf"), width = 7, height = 5)
 
 ####################################MODELS##################################################
 # Main response variables - picea (=worker abundance), Visited_picea (=bait occuopancy)

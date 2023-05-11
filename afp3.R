@@ -111,7 +111,7 @@ ants<-glm.nb( Visited_picea~ Treatment*Site.Temperature,data=afp)
 mydf <- ggpredict(ants, terms = c("Site.Temperature","Treatment"))
 b<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited) +scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "none")+ggtitle("")
 
-ggsave(paste0("Fig3_temp.pdf"), width = 8, height = 5, units = "mm")
+ggsave(paste0("Fig3_temp.pdf"), width = 120, height = 110, units = "mm")
 
 antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
 mydf <- ggpredict(antm, terms = c("Mean.Temperature","Treatment"),type="zero_inflated")
