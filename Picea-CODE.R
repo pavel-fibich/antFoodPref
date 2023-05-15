@@ -45,6 +45,10 @@ text_piceal<-"Worker abundance"
 text_visited<-"Proportions of visited baits"
 logbreaks<-c(1,1.5,2,6,11,21,31,91)
 
+#histograms of dependent variables
+hist(afp$picea, breaks = 100)
+hist(afp$Visited_picea)
+
 ########
 # Figs
 # Submitted figures should not exceed the print area of 174 X 234 mm (approx. 7 X 9.4 inches).
@@ -176,7 +180,7 @@ ggpubr::ggarrange(a, b, labels = c("(a)", "(b)"),
                   common.legend=T, legend = "bottom",ncol = 2, nrow = 1)
 ggsave(paste0("FigS4.pdf"), width = 7, height = 5)
 
-#FigS
+#FigS5
 afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Season","Site"))
 p<-ggplot(afpse, aes(factor(Season), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-se,ymax=Visited_picea+se,colour=Treatment), position=position_dodge(0.5)) +
@@ -191,15 +195,19 @@ tag_facet2(p,open="(",close=")",tag_pool=letters)
 ggsave(paste0("FigS5.pdf"), width = 7, height = 5)
 
 ####################################MODELS##################################################
-# Main response variables - picea (=worker abundance), Visited_picea (=bait occuopancy)
+# Main response variables - picea (=worker abundance), Visited_picea (=bait occupancy)
 # Main Explanatory variables - Treatment+Season+Site+Year
 # Temperatures - Site.Temperature, Mean.Temperature
 
 # Temperature models - sole effects only on worker abundance and bait occupancy
+# test with p-value
 antSiteT<-glm.nb( picea~ Site.Temperature ,data=afp)
+#residuals assumption of linearity for negative binomial / result ok for all models
+plot(antSiteT, 1)
 anova(antSiteT,test="Chisq")
 
 antMeanT<-glm.nb( picea~ Mean.Temperature ,data=afp)
+plot(antMeanT, 1)
 anova(antMeanT,test="Chisq")
 
 avpSiteT<-glm( Visited_picea~ Site.Temperature ,data=afp,family="binomial")
@@ -210,14 +218,18 @@ anova(avpMeanT,test="Chisq")
 
 #Table 1
 # full model on worker abundances (picea) with 4 main factors of interest, and their interaction
+#checking residuals assumption of linearity for negative binomial model(fitted because linear model non-normal data and highly right-skewed)
+# test with p-value
 an<-glm.nb( picea~ Treatment+Season+Site+Year+
                Treatment:Season+Treatment:Site + Treatment:Year
              +Site:Season + Site:Year + Season:Year 
              ,data=afp)
 
 Anova (an, type=3)
+plot (an, 2)
 summary(an)
 deviance(an)
+
 
 #analysis with incl. Site.Temperature to full model (all temperature effects n.s.)
 anT<-glm.nb( picea~ Treatment+Season+Site+Year+Site.Temperature+
@@ -226,6 +238,7 @@ anT<-glm.nb( picea~ Treatment+Season+Site+Year+Site.Temperature+
                Site.Temperature:Treatment+Site.Temperature:Season+Site.Temperature:Site+Site.Temperature:Year
              ,data=afp)
 Anova(anT, type=3)
+plot(anT, 1)
 summary (anT)
 
 #analysis with incl. Mean.Temperature to full model (temperature effects n.s. except Site:Mean.Temperature)
@@ -236,6 +249,7 @@ anT2<-glm.nb( picea~ Treatment+Season+Site+Year+Mean.Temperature+
               ,data=afp)
 
 Anova(anT2, type=3)
+plot(anT2, 1)
 summary (anT2)
 
 # full model on bait occupancy with 4 main factors of interest, and their interaction
@@ -279,10 +293,12 @@ summary(glht(avp,mcp(Site="Tukey", interaction_average = T, covariate_average =T
 
 #Table S4 (+ also other combination of tests of Treatment*Temperature effects)
 antm<-glm.nb( picea~ Treatment*Mean.Temperature,data=afp)
+plot (antm, 1)
 Anova(antm, data = afp, type=3)
 summary(antm)
 
 antm2<-glm.nb( picea~ Treatment*Site.Temperature,data=afp)
+plot (antm2, 1)
 Anova(antm2, data = afp, type=3)
 summary(antm2)
 
