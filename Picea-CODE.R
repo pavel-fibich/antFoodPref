@@ -49,11 +49,11 @@ logbreaks<-c(1,1.5,2,6,11,21,31,91)
 hist(afp$picea, breaks = 100)
 hist(afp$Visited_picea)
 
-########
-# Figs
+
+#################################### FIGURES ##################################################
 # Submitted figures should not exceed the print area of 174 X 234 mm (approx. 7 X 9.4 inches).
 
-#Fig1
+#Fig. 1
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Season"))
 afpse$upp<-afpse[,4]+afpse$se
 afpse$low<-ifelse(afpse[,4]-afpse$se<0,0,afpse[,4]-afpse$se)
@@ -82,7 +82,7 @@ ggpubr::ggarrange(a, b, common.legend=T, legend = "bottom",labels = c("(a)", "(b
 ggsave(paste0("Fig1.pdf"), width = 140, height = 100, units = "mm")
 
 
-####################################FIGURES##################################################
+#Fig. 2
 # tag_facet breaks ggplot theme
 tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf, y = Inf, 
                        hjust = -0.5, vjust = 1.5, fontface = 2, family = "", ...) {
@@ -111,18 +111,15 @@ p
 tag_facet2(p,open="(",close=")",tag_pool = letters)
 ggsave(paste0("Fig2.pdf"), width = 7, height = 9.4)
 
-#Fig3
+#Fig. 3
 ants<-glm.nb( Visited_picea~ Treatment*Site.Temperature,data=afp)
 mydf <- ggpredict(ants, terms = c("Site.Temperature","Treatment"))
-fig3<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
-scale_color_manual(values = trcol) + theme_light()+theme(legend.position = c(0.2, 0.65))+ggtitle("")
-
 fig3<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
   scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
 
 ggsave(paste0("Fig3.pdf"), width = 120, height = 110, units = "mm")
 
-#FigS3
+#Fig. S3
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment"))
 afpse$upp<-afpse[,3]+afpse$se
 afpse$low<-ifelse(afpse[,3]-afpse$se<0,0,afpse[,3]-afpse$se)
@@ -148,7 +145,7 @@ ggpubr::ggarrange(a, b, #common.legend=F, legend = "bottom",
                   ncol = 2, nrow = 1)
 ggsave(paste0("FigS3.pdf"), width = 7, height = 5)
 
-#FigS4
+#Fig. S4
 # x Petr for Pavel -  Site legend yet to Bily Kamen, Jankov, Radostin
 afpse<-summarySE(afp, measurevar="picea1", groupvars=c("Treatment","Site"))
 afpse$upp<-afpse[,4]+afpse$se
@@ -180,7 +177,7 @@ ggpubr::ggarrange(a, b, labels = c("(a)", "(b)"),
                   common.legend=T, legend = "bottom",ncol = 2, nrow = 1)
 ggsave(paste0("FigS4.pdf"), width = 7, height = 5)
 
-#FigS5
+#Fig. S5
 afpse<-summarySE(afp, measurevar="Visited_picea", groupvars=c("Treatment","Season","Site"))
 p<-ggplot(afpse, aes(factor(Season), Visited_picea))+
   geom_errorbar(aes(ymin=Visited_picea-se,ymax=Visited_picea+se,colour=Treatment), position=position_dodge(0.5)) +
@@ -218,7 +215,7 @@ anova(avpMeanT,test="Chisq")
 
 #Table 1
 # full model on worker abundances (picea) with 4 main factors of interest, and their interaction
-#checking residuals assumption of linearity for negative binomial model(fitted because linear model non-normal data and highly right-skewed)
+# plot(, 1) checking residuals assumption of linearity for negative binomial model(fitted because non-normal data and highly right-skewed)
 # test with p-value
 an<-glm.nb( picea~ Treatment+Season+Site+Year+
                Treatment:Season+Treatment:Site + Treatment:Year
@@ -226,7 +223,7 @@ an<-glm.nb( picea~ Treatment+Season+Site+Year+
              ,data=afp)
 
 Anova (an, type=3)
-plot (an, 2)
+plot (an, 1)
 summary(an)
 deviance(an)
 
@@ -310,5 +307,37 @@ summary(antmp)
 antmp2 <-glm( Visited_picea~ Treatment*Site.Temperature,data=afp,family="binomial")
 Anova(antmp2, data = afp, type=3)
 summary(antmp2)
+
+##### Not used: Figs including the nonsign. treatment*temperature models to inspect individual slopes for nutrients
+
+#Fig. 3A (former 3A figure) / type="zero_inflated" deleted (put only the model we used for testing = the same result as before, redundant command)
+mydfA <- ggpredict(antm, terms = c("Mean.Temperature","Treatment"))
+fig3A<-plot(mydfA) + scale_y_log10() + xlab("Mean temperature [deg. C]")+ylab(text_piceal) +
+  scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
+fig3A
+
+#Fig.3B
+mydfB <- ggpredict(antm2, terms = c("Site.Temperature","Treatment"))
+fig3B<-plot(mydfB) + scale_y_log10() + xlab("Site temperature [deg. C]")+ylab(text_piceal) +
+  scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
+fig3B
+
+#Fig.3C
+mydfC <- ggpredict(antmp, terms = c("Mean.Temperature","Treatment"))
+fig3C<-plot(mydfC) + xlab("Mean temperature [deg. C]")+ylab(text_visited)+ 
+  scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
+fig3C
+
+#Fig.3D
+mydfD <- ggpredict(antmp2, terms = c("Site.Temperature","Treatment"))
+fig3D<-plot(mydfD) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
+  scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
+fig3D
+
+############ final Fig. 3 - shall be the same as Fig.3D but wrongly nb.glm!?
+mydf <- ggpredict(ants, terms = c("Site.Temperature","Treatment"))
+fig3<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
+  scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
+fig3
 
 
