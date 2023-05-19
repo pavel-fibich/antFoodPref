@@ -112,11 +112,13 @@ tag_facet2(p,open="(",close=")",tag_pool = letters)
 ggsave(paste0("Fig2.pdf"), width = 7, height = 9.4)
 
 #Fig. 3
-ants<-glm.nb( Visited_picea~ Treatment*Site.Temperature,data=afp)
+# ants<-glm.nb( Visited_picea~ Treatment*Site.Temperature,data=afp) # bad family
+ants <- antmp2 <-glm( Visited_picea~ Treatment*Site.Temperature,data=afp,family="binomial")
 mydf <- ggpredict(ants, terms = c("Site.Temperature","Treatment"))
-fig3<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
-  scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
-
+fig3<-plot(mydf) + xlab("Site temperature [\u00B0C]") + ylab(text_visited)+ 
+  scale_color_manual(values = trcol) + theme_light() +
+  scale_y_continuous(breaks=c(0.2,0.4,0.6,0.8,1),labels=c(0.2,0.4,0.6,0.8,1.00) ) +
+  theme(legend.position = "right") + ggtitle("")
 ggsave(paste0("Fig3.pdf"), width = 120, height = 110, units = "mm")
 
 #Fig. S3
