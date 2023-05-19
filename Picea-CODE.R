@@ -312,7 +312,7 @@ summary(antmp2)
 
 ##### Not used: Figs including the nonsign. treatment*temperature models to inspect individual slopes for nutrients
 
-#Fig. 3A (former 3A figure) / type="zero_inflated" deleted (put only the model we used for testing = the same result as before, redundant command)
+#Fig. 3A
 mydfA <- ggpredict(antm, terms = c("Mean.Temperature","Treatment"))
 fig3A<-plot(mydfA) + scale_y_log10() + xlab("Mean temperature [deg. C]")+ylab(text_piceal) +
   scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
@@ -335,11 +335,3 @@ mydfD <- ggpredict(antmp2, terms = c("Site.Temperature","Treatment"))
 fig3D<-plot(mydfD) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
   scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
 fig3D
-
-############ final Fig. 3 - shall be the same as Fig.3D but wrongly nb.glm!?
-mydf <- ggpredict(ants, terms = c("Site.Temperature","Treatment"))
-fig3<-plot(mydf) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
-  scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
-fig3
-
-
