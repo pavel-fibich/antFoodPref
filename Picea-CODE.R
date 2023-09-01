@@ -2,7 +2,7 @@
 # R code for reproducing analyses and Figures 
 # by Pavel Fibich and Petr Klimes
 # for the manuscript 
-#Feeding preferences of the black bog ant vary due to climatic and nutrient-limitation effects  
+#Feeding preferences vary across seasons and sites in the black bog ant  : evidence for the nutrient limitation hypothesis      
 
 rm(list=ls())
 
