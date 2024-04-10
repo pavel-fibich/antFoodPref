@@ -2,7 +2,7 @@
 # R code for reproducing analyses and Figures 
 # by Pavel Fibich and Petr Klimes
 # for the manuscript 
-#Feeding preferences vary across seasons and sites in the black bog ant  : evidence for the nutrient limitation hypothesis      
+#Different feeding preferences for macronutrients across seasons and sites indicate temporal and spatial nutrient limitation in the black bog ant      
 
 rm(list=ls())
 
@@ -335,3 +335,4 @@ mydfD <- ggpredict(antmp2, terms = c("Site.Temperature","Treatment"))
 fig3D<-plot(mydfD) + xlab("Site temperature [deg. C]")+ylab(text_visited)+ 
   scale_color_manual(values = trcol) + theme_light()+theme(legend.position = "right") +ggtitle("")
 fig3D
+
